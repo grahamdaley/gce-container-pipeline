@@ -1,0 +1,36 @@
+---
+# file: roles/get-ssl/tasks/main.yml
+# Install and run scripts to obtain SSL cert from LetsEncrypt
+- name: Install certbot
+  apt:
+    name: certbot
+
+- name: Install SSL cert update script
+  template:
+    src: getssl.sh
+    dest: /usr/local/bin/getssl
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Set crontab to update SSL cert
+  template:
+    src: update_ssl_cron.sh
+    dest: /etc/cron.daily/update_ssl
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Get SSL cert from LetsEncrypt
+  command: /usr/local/bin/getssl    
+
+- name: Ensure local CA certs directory exists
+  file:
+    path: /usr/local/share/ca-certificates
+    state: directory
+
+- name: Install LetsEncrypt CA cert
+  shell: openssl x509 -in /etc/letsencrypt/live/{{ machine_name }}-{{ project_id }}.{{ project_domain }}/chain.pem -inform PEM -out /usr/local/share/ca-certificates/letsencryptCA.crt
+
+- name: Update cert index
+  shell: /usr/sbin/update-ca-certificates

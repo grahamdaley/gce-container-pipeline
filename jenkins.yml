@@ -1,0 +1,46 @@
+---
+# jenkins-ansible
+- name: Deploy Jenkins server using Docker
+  hosts: gce_instances
+  connection: ssh
+  gather_facts: false
+  become: true
+
+  vars_files:
+    - gce_vars/machine
+    - gce_vars/auth
+
+  vars:
+    jenkins_version: "2.32.3"
+    jenkins_hostname: "{{ machine_name }}-{{ project_id }}"
+    jenkins_url: "https://{{ jenkins_hostname }}.{{ project_domain }}"
+    jenkins_port: 443
+    jenkins_ssl_cert: ssl/fullchain.pem
+    jenkins_ssl_key: ssl/privkey-rsa.pem
+    jenkins_install_via: "docker"
+    jenkins_jobs: [
+        "my-first-job"
+      ]
+    jenkins_plugins:
+      - git
+      - log-parser
+      - copyartifact
+      - workflow-aggregator
+      - workflow-multibranch
+      - docker-workflow
+      - template-project
+      - google-login
+
+  tasks:
+    - name: Install setdns script on GCE host
+      template:
+        src: common_files/setdns
+        dest: /usr/local/bin/setdns
+        owner: root
+        group: root
+        mode: '0755'
+
+  roles:
+    - deploy-docker
+    - get-ssl
+    - ansible-jenkins

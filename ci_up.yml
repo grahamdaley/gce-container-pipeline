@@ -1,0 +1,5 @@
+---
+# CI Environment Setup
+- include: gce-instances.yml
+- include: gce-network.yml
+- include: jenkins.yml

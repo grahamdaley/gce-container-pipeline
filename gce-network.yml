@@ -1,0 +1,28 @@
+---
+# compute-video-demo-ansible
+- name: Set up networking
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - gce_vars/auth
+    - gce_vars/machine
+
+  tasks:
+    - name: Allow HTTP traffic
+      gce_net:
+        fwname: all-http
+        name: default
+        allowed: tcp:80
+        project_id: "{{ project_id }}"
+        credentials_file: "{{ credentials_file }}"
+        service_account_email: "{{ service_account_email }}"
+
+    - name: Allow HTTPS traffic
+      gce_net:
+        fwname: all-https
+        name: default
+        allowed: tcp:443
+        project_id: "{{ project_id }}"
+        credentials_file: "{{ credentials_file }}"
+        service_account_email: "{{ service_account_email }}"
