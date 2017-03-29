@@ -1,5 +1,6 @@
+
 ---
-machine_name: jenkins
+machine_names: jenkins
 machine_type: n1-standard-1
 zone: us-central1-a
 image: ubuntu-1610

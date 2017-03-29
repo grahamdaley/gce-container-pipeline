@@ -1,0 +1,8 @@
+---
+# Google Compute Engine required authentication global variables
+# (Replace 'YOUR_PROJECT_ID' with the Project ID used in creating your GCP project.)
+project_id: YOUR_PROJECT_ID
+project_domain: YOUR_WEB_DOMAIN
+service_account_email: YOUR_GCE_SERVICE_ACCOUNT
+credentials_file: YOUR_GCE_CREDENTIALS_FILE_PATH
+ssl_email: YOUR_EMAIL_ADDRESS_FOR_SSL_CERT

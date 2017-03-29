@@ -1,0 +1,7 @@
+# group_vars/all
+# --------------------
+#
+# Variables to be set for dynamic hosts.
+---
+ansible_ssh_user: YOUR_LOGIN_ID
+ansible_ssh_private_key_file: YOUR_SSH_PRIVATE_KEY_PATH

@@ -30,7 +30,7 @@
     state: directory
 
 - name: Install LetsEncrypt CA cert
-  shell: openssl x509 -in /etc/letsencrypt/live/{{ machine_name }}-{{ project_id }}.{{ project_domain }}/chain.pem -inform PEM -out /usr/local/share/ca-certificates/letsencryptCA.crt
+  shell: openssl x509 -in /etc/letsencrypt/live/{{ machine_names }}-{{ project_id }}.{{ project_domain }}/chain.pem -inform PEM -out /usr/local/share/ca-certificates/letsencryptCA.crt
 
 - name: Update cert index
   shell: /usr/sbin/update-ca-certificates

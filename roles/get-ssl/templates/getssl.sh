@@ -4,7 +4,7 @@
 # LetsEncrypt. If the certificate is already present, then
 # just checks for an update instead of applying for a new one.
 #
-FQDN="{{ machine_name }}-{{ project_id }}.{{ project_domain }}"
+FQDN="{{ machine_names }}-{{ project_id }}.{{ project_domain }}"
 CERT_SRC_DIR="/etc/letsencrypt/live/${FQDN}"
 CERT_DEST_DIR="{{ jenkins_home }}/ssl"
 

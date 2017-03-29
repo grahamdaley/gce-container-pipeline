@@ -13,7 +13,7 @@
 - name: Configure Jenkins container to restart automatically
   template:
     src: docker-jenkins.service
-    dest: /etc/systemd/system/docker-jenkins.service
+    dest: /lib/systemd/system/docker-jenkins.service
     owner: root
     group: root
     mode: '0644'

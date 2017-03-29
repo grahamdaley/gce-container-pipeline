@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 from google.cloud import dns
-from google.cloud.exceptions import BadRequest
+from google.cloud.exceptions import BadRequest, Conflict
 import argparse
 import os
 import platform
@@ -12,81 +12,93 @@ import urllib2
 
 
 def main():
-	parser = argparse.ArgumentParser()
-	parser.add_argument("command", help="add, delete or update")
-	parser.add_argument("-n", "--hostname", help="Hostname to be added or deleted")
-	parser.add_argument("-d", "--domain", help="DNS domain name")
-	parser.add_argument("-i", "--ip", help="IP address of the hostname being added or deleted")
-	parser.add_argument("-c", "--credentials", help="Path to json file containing GCE service account credentials")
-	args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", help="add, delete or update")
+    parser.add_argument("-p", "--project", help="GCE project ID")
+    parser.add_argument("-n", "--hostname", help="Hostname to be added or deleted")
+    parser.add_argument("-d", "--domain", help="DNS domain name")
+    parser.add_argument("-i", "--ip", help="IP address of the hostname being added or deleted")
+    parser.add_argument("-c", "--credentials", help="Path to json file containing GCE service account credentials")
+    args = parser.parse_args()
 
-	if args.credentials:
-		client = dns.Client.from_service_account_json(args.credentials)
-	else:
-		client = dns.Client()
+    if args.credentials:
+        client = dns.Client.from_service_account_json(args.credentials)
+    else:
+        client = dns.Client()
 
-	hostname = args.hostname if args.hostname else platform.uname()[1]
-	domain = args.domain if args.domain else "{{ project_domain }}"
-	if args.ip:
-		ip = args.ip
-	elif args.command != 'delete':
-		ip = get_external_ip()
-	else:
-		ip = ''
+    if args.project:
+        client.project = args.project
 
-	# Find the DNS zone for the given domain name
-	[zone for zone in client.list_zones() if zone.dns_name == args.domain]
+    hostname = args.hostname if args.hostname else platform.uname()[1]
+    domain = args.domain if args.domain else "{{ project_domain }}"
+    if args.ip:
+        ip = args.ip
+    elif args.command != 'delete':
+        ip = get_external_ip()
+    else:
+        ip = ''
 
-	if args.command == 'update':
-		set_dns(client, zone, 'delete', hostname, domain)
-		set_dns(client, zone, 'add', hostname, domain, ip)
-	else:
-		set_dns(client, zone, args.command, hostname, domain, ip)
+    # Find the DNS zone for the given domain name
+    [zone for zone in client.list_zones() if zone.dns_name == args.domain]
+
+    if args.command == 'update':
+        update_dns(client, zone, hostname, domain, ip)
+    else:
+        set_dns(client, zone, args.command, hostname, domain, ip)
 
 
 def get_external_ip():
-	req = urllib2.Request('http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip')
-	req.add_header('Metadata-Flavor', 'Google')
-	return urllib2.urlopen(req).read()
+    req = urllib2.Request('http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip')
+    req.add_header('Metadata-Flavor', 'Google')
+    return urllib2.urlopen(req).read()
+
+
+def update_dns(client, zone, hostname, domain, ip):
+    set_dns(client, zone, 'delete', hostname, domain)
+    set_dns(client, zone, 'add', hostname, domain, ip)
 
 
 def set_dns(client, zone, command, hostname, domain, ip=''):
-	changes = zone.changes()
-	fqdn = "{0}.{1}.".format(hostname, domain)
+    changes = zone.changes()
+    fqdn = "{0}.{1}.".format(hostname, domain)
 
-	if command == 'add':
-		# Fill out a record set for this new A record
-		record_set = zone.resource_record_set(name=fqdn,
-											  record_type='A',
-											  ttl=300,
-											  rrdatas=[ip])
-		changes.add_record_set(record_set)
-	else:
-		# Look up actual IP address of this host we want to delete
-		rec_ip = [rec.rrdatas for rec in zone.list_resource_record_sets() if rec.name == fqdn][0][0]
+    if command == 'add':
+        # Fill out a record set for this new A record
+        record_set = zone.resource_record_set(name=fqdn,
+                                              record_type='A',
+                                              ttl=300,
+                                              rrdatas=[ip])
+        changes.add_record_set(record_set)
+    else:
+        # Look up actual IP address of this host we want to delete
+        rec_ip = [rec.rrdatas for rec in zone.list_resource_record_sets() if rec.name == fqdn][0][0]
 
-		# Fill out a record set for this existing A record
-		record_set = zone.resource_record_set(name=fqdn,
-											  record_type='A',
-											  ttl=300,
-											  rrdatas=[rec_ip])
-		changes.delete_record_set(record_set)
+        # Fill out a record set for this existing A record
+        record_set = zone.resource_record_set(name=fqdn,
+                                              record_type='A',
+                                              ttl=300,
+                                              rrdatas=[rec_ip])
+        changes.delete_record_set(record_set)
 
-	try:
-		changes.create()
-	except BadRequest:
-		sys.exit("Invalid hostname / domain")
+    try:
+        changes.create()
+    except BadRequest:
+        sys.exit("Invalid hostname / domain")
+    except Conflict:
+        if command == 'add':
+            update_dns(client, zone, hostname, domain, ip)
+        return
 
-	while changes.status != 'done':
-		time.sleep(5)
-		changes.reload()
+    while changes.status != 'done':
+        time.sleep(5)
+        changes.reload()
 
-	if len(changes.additions) > 0:
-		with open("/tmp/{0}.dns".format(hostname), "w") as ans_file:
-			ans_file.write("{0}\n".format(ip))
-	elif len(changes.deletions) > 0:
-		os.remove("/tmp/{0}.dns".format(hostname))
+    if len(changes.additions) > 0:
+        with open("/tmp/{0}.dns".format(hostname), "w") as ans_file:
+            ans_file.write("{0}\n".format(ip))
+    elif len(changes.deletions) > 0:
+        os.remove("/tmp/{0}.dns".format(hostname))
 
 
 if __name__ == "__main__":
-	main()
+    main()

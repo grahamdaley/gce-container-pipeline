@@ -1,22 +1,23 @@
 ---
-# compute-video-demo-ansible
+# ci_down.yml
+# Destroy the CI instance and associated resources
 - name: Destroy all CI resources
   hosts: localhost
   connection: local
   gather_facts: no
   vars_files:
     - gce_vars/auth
-    - gce_vars/machine
+    - gce_vars/ci_machine
 
   tasks:
     - name: Delete the DNS A record
-      command: common_files/setdns delete -n {{ machine_name }}-{{ project_id }} -d {{ project_domain }} -c {{ credentials_file }}
+      command: common_files/setdns delete -n {{ machine_names }}-{{ project_id }} -d {{ project_domain }} -c {{ credentials_file }}
       args:
-        removes: "/tmp/{{ machine_name }}-{{ project_id }}.dns"
+        removes: "/tmp/{{ machine_names }}-{{ project_id }}.dns"
 
     - name: Destroy the CE instance
       gce:
-        instance_names: "{{ machine_name }}"
+        instance_names: "{{ machine_names }}"
         zone: "{{ zone }}"
         project_id: "{{ project_id }}"
         credentials_file: "{{ credentials_file }}"

@@ -1,0 +1,37 @@
+---
+# file: roles/deploy-docker/tasks/main.yml
+- name: Bring up the required instance
+  gce:
+    instance_names: "{{ machine_names }}"
+    machine_type: "{{ machine_type }}"
+    image: "{{ image }}"
+    zone: "{{ zone }}"
+    project_id: "{{ project_id }}"
+    credentials_file: "{{ credentials_file }}"
+    service_account_email: "{{ service_account_email }}"
+    service_account_permissions:
+      - compute
+      - servicecontrol
+      - service.management
+      - logging-write
+      - trace-append
+      - devstorage-ro
+  register: gce
+
+- name: Wait for SSH to come up
+  wait_for: host={{ item.public_ip }} port=22 delay=10 state=started timeout=60
+  with_items: "{{ gce.instance_data }}"
+
+#- name: accept new ssh fingerprints                                         
+#  shell: ssh-keyscan -H {{ item.public_ip }} >> ~/.ssh/known_hosts          
+#  with_items: '{{ gce.instance_data }}'
+
+- name: Add host to group
+  add_host: hostname={{ item.public_ip }} groupname=gce_instances
+  with_items: "{{ gce.instance_data }}"
+
+- name: Set DNS A record for this host
+  command: common_files/setdns add -p {{ project_id }} -n {{ machine_names }}-{{ project_id }} -d {{ project_domain }} -i {{ item.public_ip }} -c {{ credentials_file }}
+  args:
+    creates: "/tmp/{{ machine_names }}-{{ project_id }}.dns"
+  with_items: "{{ gce.instance_data }}"
