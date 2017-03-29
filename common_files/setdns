@@ -5,7 +5,6 @@ from google.cloud import dns
 from google.cloud.exceptions import BadRequest, Conflict
 import argparse
 import os
-import platform
 import sys
 import time
 import urllib2
@@ -26,11 +25,11 @@ def main():
     else:
         client = dns.Client()
 
-    if args.project:
-        client.project = args.project
-
-    hostname = args.hostname if args.hostname else platform.uname()[1]
+    project = args.project if args.project else "{{ project_id }}"
+    client.project = project
+    hostname = args.hostname if args.hostname else "{{ machine_names }}-" + project
     domain = args.domain if args.domain else "{{ project_domain }}"
+
     if args.ip:
         ip = args.ip
     elif args.command != 'delete':
@@ -93,11 +92,13 @@ def set_dns(client, zone, command, hostname, domain, ip=''):
         time.sleep(5)
         changes.reload()
 
+    tmp_file = "/tmp/{0}.dns".format(hostname)
     if len(changes.additions) > 0:
-        with open("/tmp/{0}.dns".format(hostname), "w") as ans_file:
+        with open(tmp_file, "w") as ans_file:
             ans_file.write("{0}\n".format(ip))
     elif len(changes.deletions) > 0:
-        os.remove("/tmp/{0}.dns".format(hostname))
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
 
 
 if __name__ == "__main__":

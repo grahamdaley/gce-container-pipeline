@@ -10,12 +10,10 @@
     credentials_file: "{{ credentials_file }}"
     service_account_email: "{{ service_account_email }}"
     service_account_permissions:
-      - compute
-      - servicecontrol
-      - service.management
+      - cloud-platform
+      - compute-rw
       - logging-write
-      - trace-append
-      - devstorage-ro
+      - storage-ro
   register: gce
 
 - name: Wait for SSH to come up
