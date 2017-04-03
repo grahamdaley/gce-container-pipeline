@@ -32,7 +32,7 @@
     jenkins_ssl_key: ssl/privkey-rsa.pem
     jenkins_install_via: "docker"
     jenkins_jobs: [
-        "my-first-job"
+        "from-git-repository"
       ]
     jenkins_plugins:
       - git
