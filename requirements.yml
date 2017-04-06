@@ -1,0 +1,7 @@
+---
+
+# Install a role from the Ansible Galaxy for Jenkins setup
+- src: emmetog.jenkins
+
+# Install a role from the Ansible Galaxy for nginx setup
+- src: geerlingguy.nginx
