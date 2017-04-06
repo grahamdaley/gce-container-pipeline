@@ -11,7 +11,7 @@
 
   tasks:
     - name: Delete the DNS A record
-      command: common_files/setdns delete -n {{ machine_names }}-{{ project_id }} -d {{ project_domain }} -c {{ credentials_file }}
+      command: common_files/setdns delete -n {{ machine_names }}-{{ project_id }} -d {{ project_domain }} -p {{ project_id }} -c {{ credentials_file }}
       args:
         removes: "/tmp/{{ machine_names }}-{{ project_id }}.dns"
 
