@@ -10,19 +10,6 @@
     enabled: yes
     state: started
 
-- name: Configure Jenkins container to restart automatically
-  template:
-    src: docker-jenkins.service
-    dest: /lib/systemd/system/docker-jenkins.service
-    owner: root
-    group: root
-    mode: '0644'
-
-- name: Restart Jenkins container in Docker engine upon reboot
-  systemd:
-    name: docker-jenkins
-    enabled: yes
-
 - name: Install Python pip
   apt:
     name: python-pip

@@ -13,10 +13,10 @@
     - gce-instances
     - gce-network
 
-- name: Deploy Jenkins server using Docker
+- name: Deploy Docker, Jenkins and nginx services
   hosts: gce_instances
   connection: ssh
-  gather_facts: false
+  gather_facts: true
   become: true
 
   vars_files:
@@ -26,11 +26,10 @@
   vars:
     jenkins_version: "2.32.3"
     jenkins_hostname: "{{ machine_names }}-{{ project_id }}"
-    jenkins_url: "https://{{ jenkins_hostname }}.{{ project_domain }}"
-    jenkins_port: 443
-    jenkins_ssl_cert: ssl/fullchain.pem
-    jenkins_ssl_key: ssl/privkey-rsa.pem
-    jenkins_install_via: "docker"
+    jenkins_url: "http://{{ jenkins_hostname }}.{{ project_domain }}"
+    # jenkins_ssl_cert: ssl/fullchain.pem
+    # jenkins_ssl_key: ssl/privkey-rsa.pem
+    jenkins_install_via: "apt"
     jenkins_jobs: [
         "from-git-repository"
       ]
@@ -54,7 +53,14 @@
         mode: '0755'
 
   roles:
-    - deploy-docker
-    - get-ssl
-    - ansible-jenkins
+    - role: deploy-docker
+    - role: get-ssl
 
+    - role: jdauphant.nginx
+      nginx_sites:
+        jenkins:
+          template: nginx-configs/ci.conf
+          server_name: "{{ jenkins_hostname }}.{{ project_domain }}"
+
+    - role: ansible-jenkins
+    # - role: emmetog.jenkins

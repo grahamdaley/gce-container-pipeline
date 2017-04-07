@@ -21,6 +21,16 @@
     group: root
     mode: '0755'
 
+- name: Create SSL config directory
+  file:
+    path: /etc/ssl/certs
+    state: directory
+
+- name: Generate strong Diffie-Hellman group
+  shell: openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+  args:
+    creates: /etc/ssl/certs/dhparam.pem
+
 - name: Get SSL cert from LetsEncrypt
   command: /usr/local/bin/getssl    
 
@@ -31,6 +41,8 @@
 
 - name: Install LetsEncrypt CA cert
   shell: openssl x509 -in /etc/letsencrypt/live/{{ machine_names }}-{{ project_id }}.{{ project_domain }}/chain.pem -inform PEM -out /usr/local/share/ca-certificates/letsencryptCA.crt
+  args:
+    creates: /usr/local/share/ca-certificates/letsencryptCA.crt
 
 - name: Update cert index
   shell: /usr/sbin/update-ca-certificates
