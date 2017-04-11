@@ -1,4 +1,5 @@
 all
 gce_vars/auth
+group_vars/all
 .DS_Store
 *.retry
