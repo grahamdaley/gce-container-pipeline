@@ -1,8 +1,0 @@
----
-# Google Compute Engine required authentication global variables
-# (Replace 'YOUR_PROJECT_ID' with the Project ID used in creating your GCP project.)
-project_id: my-js-pipeline
-project_domain: gdaley.com
-service_account_email: ansible@my-js-pipeline.iam.gserviceaccount.com
-credentials_file: /Users/gdaley/Downloads/my-js-pipeline.json
-ssl_email: gdaley@palo-it.com
