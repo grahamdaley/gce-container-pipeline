@@ -13,4 +13,4 @@ if [[ ! -f "$SSL_CERT_FILE" ]]; then
   curl -O http://curl.haxx.se/ca/cacert.pem
 fi
 
-ansible-playbook -vvv "$PLAYBOOK"
+ansible-playbook "$PLAYBOOK"
