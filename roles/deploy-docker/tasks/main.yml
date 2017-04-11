@@ -10,18 +10,6 @@
     enabled: yes
     state: started
 
-- name: Install Python pip
-  apt:
-    name: python-pip
-
-- name: Install Docker Python module
-  pip:
-    name: docker-py
-
-- name: Install Google Cloud Python module
-  pip:
-    name: google-cloud
-
 - name: Add main login user, {{ ansible_ssh_user }}, to 'docker' group
   user: name='{{ ansible_ssh_user }}'
         groups=docker

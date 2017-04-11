@@ -8,6 +8,14 @@
     group: root
     mode: '0755'
 
+- name: Install Python pip
+  apt:
+    name: python-pip
+
+- name: Install Google Cloud Python module
+  pip:
+    name: google-cloud
+
 - name: Set DNS A record for this host
   shell: /usr/local/bin/setdns add
   args:
