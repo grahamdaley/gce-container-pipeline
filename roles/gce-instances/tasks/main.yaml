@@ -20,16 +20,6 @@
   wait_for: host={{ item.public_ip }} port=22 delay=10 state=started timeout=60
   with_items: "{{ gce.instance_data }}"
 
-#- name: accept new ssh fingerprints                                         
-#  shell: ssh-keyscan -H {{ item.public_ip }} >> ~/.ssh/known_hosts          
-#  with_items: '{{ gce.instance_data }}'
-
 - name: Add host to group
   add_host: hostname={{ item.public_ip }} groupname=gce_instances
-  with_items: "{{ gce.instance_data }}"
-
-- name: Set DNS A record for this host
-  command: common_files/setdns add -p {{ project_id }} -n {{ machine_names }}-{{ project_id }} -d {{ project_domain }} -i {{ item.public_ip }} -c {{ credentials_file }}
-  args:
-    creates: "/tmp/{{ machine_names }}-{{ project_id }}.dns"
   with_items: "{{ gce.instance_data }}"

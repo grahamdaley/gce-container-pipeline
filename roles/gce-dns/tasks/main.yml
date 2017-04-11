@@ -1,0 +1,28 @@
+---
+# file: roles/gce-dns/tasks/main.yml
+- name: Install setdns script on host
+  template:
+    src: setdns
+    dest: /usr/local/bin/setdns
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Set DNS A record for this host
+  shell: /usr/local/bin/setdns add
+  args:
+    creates: "/tmp/{{ machine_names }}-{{ project_id }}.dns"
+
+- name: Install DNS update script on host
+  copy:
+    src: update_dns.service
+    dest: /lib/systemd/system/update_dns.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable DNS update at boot time
+  systemd:
+    daemon_reload: yes
+    name: update_dns
+    enabled: yes

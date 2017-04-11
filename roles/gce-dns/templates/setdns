@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 from google.cloud import dns
 from google.cloud.exceptions import BadRequest, Conflict
 import argparse
@@ -9,6 +8,7 @@ import sys
 import time
 import urllib2
 
+EXTERNAL_IP_URL = 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip'
 
 def main():
     parser = argparse.ArgumentParser()
@@ -47,7 +47,7 @@ def main():
 
 
 def get_external_ip():
-    req = urllib2.Request('http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip')
+    req = urllib2.Request(EXTERNAL_IP_URL)
     req.add_header('Metadata-Flavor', 'Google')
     return urllib2.urlopen(req).read()
 

@@ -42,16 +42,8 @@
       - template-project
       - google-login
 
-  tasks:
-    - name: Install setdns script on GCE host
-      template:
-        src: common_files/setdns
-        dest: /usr/local/bin/setdns
-        owner: root
-        group: root
-        mode: '0755'
-
   roles:
+    - role: gce-dns
     - role: deploy-docker
     - role: get-ssl
 

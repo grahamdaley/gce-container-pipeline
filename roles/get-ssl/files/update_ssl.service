@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for new SSL cert on boot
+After=nginx.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/getssl.sh
+
+[Install]
+WantedBy=multi-user.target

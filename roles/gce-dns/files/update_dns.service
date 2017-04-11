@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for new SSL cert on boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/setdns update
+
+[Install]
+WantedBy=multi-user.target

@@ -13,6 +13,20 @@
     group: root
     mode: '0755'
 
+- name: Install SSL update boot script
+  copy:
+    src: update_ssl.service
+    dest: /lib/systemd/system/update_ssl.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable SSL update at boot time
+  systemd:
+    daemon_reload: yes
+    name: update_ssl
+    enabled: yes
+
 - name: Set crontab to update SSL cert
   template:
     src: update_ssl_cron.sh
